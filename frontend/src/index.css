@@ -1,0 +1,111 @@
+/* Style minimaliste pour le Chat */
+.chat-window {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background-color: #f3f4f6;
+}
+
+.header {
+  background-color: #2563eb;
+  color: white;
+  padding: 1rem;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.msg {
+  max-width: 80%;
+  padding: 10px 15px;
+  border-radius: 18px;
+  font-size: 14px;
+  position: relative;
+}
+
+.msg.me {
+  align-self: flex-end;
+  background-color: #2563eb;
+  color: white;
+  border-bottom-right-radius: 2px;
+}
+
+.msg.other {
+  align-self: flex-start;
+  background-color: white;
+  color: #1f2937;
+  border-bottom-left-radius: 2px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+}
+
+.msg small {
+  display: block;
+  font-size: 10px;
+  margin-bottom: 4px;
+  opacity: 0.8;
+}
+
+.input-area {
+  padding: 1rem;
+  background: white;
+  display: flex;
+  gap: 10px;
+  border-top: 1px solid #e5e7eb;
+}
+
+.input-area input {
+  flex: 1;
+  padding: 12px 20px;
+  border-radius: 25px;
+  border: 1px solid #d1d5db;
+  outline: none;
+}
+
+.input-area button {
+  background: #2563eb;
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+/* Style pour l'écran de connexion */
+.login-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  padding: 20px;
+  text-align: center;
+}
+
+.login-container input {
+  margin: 20px 0;
+  padding: 12px;
+  width: 100%;
+  max-width: 300px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+}
+
+.login-container button {
+  background: #2563eb;
+  color: white;
+  padding: 12px 30px;
+  border-radius: 8px;
+  border: none;
+  font-weight: bold;
+}
