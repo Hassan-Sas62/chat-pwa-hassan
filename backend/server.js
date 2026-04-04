@@ -17,7 +17,7 @@ const io = new Server(server, {
     }
 });
 
-// 🌐 MongoDB Atlas URI (SRV ou standard)
+// 🌐 MongoDB Atlas URI
 const uri = "mongodb://SasdeSas:Hassane02%40@ac-sjwyqnm-shard-00-00.ri2es6o.mongodb.net:27017,ac-sjwyqnm-shard-00-01.ri2es6o.mongodb.net:27017,ac-sjwyqnm-shard-00-02.ri2es6o.mongodb.net:27017/hassan_chat?ssl=true&replicaSet=atlas-ffb5le-shard-0&authSource=admin&retryWrites=true&w=majority";
 
 // 📦 Modèle Message
@@ -38,7 +38,7 @@ mongoose.connect(uri)
     io.on('connection', async (socket) => {
         console.log('📱 Nouvel utilisateur connecté :', socket.id);
 
-        // 📥 Charger l'historique des messages
+        // 📥 Charger l'historique
         try {
             const oldMessages = await Message.find().sort({ timestamp: 1 }).limit(50);
             socket.emit('load_messages', oldMessages);
@@ -63,6 +63,18 @@ mongoose.connect(uri)
             }
         });
 
+        // 🗑️ AJOUT : Supprimer un message
+        socket.on('delete_message', async (messageId) => {
+            try {
+                await Message.findByIdAndDelete(messageId);
+                // On informe TOUT LE MONDE que ce message doit disparaître de l'écran
+                io.emit('message_deleted', messageId);
+                console.log("🗑️ Message supprimé :", messageId);
+            } catch (err) {
+                console.log("❌ Erreur suppression :", err.message);
+            }
+        });
+
         socket.on('disconnect', () => {
             console.log('❌ Utilisateur déconnecté');
         });
@@ -72,6 +84,8 @@ mongoose.connect(uri)
 .catch(err => console.log("❌ Erreur MongoDB :", err.message));
 
 // 🚀 Lancer le serveur
-server.listen(5000, () => {
-    console.log("🚀 Serveur prêt sur le port 5000");
+// Utilise process.env.PORT pour Render
+const PORT = process.env.PORT || 5000;
+server.listen(PORT, () => {
+    console.log(`🚀 Serveur prêt sur le port ${PORT}`);
 });
