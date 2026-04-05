@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import io from 'socket.io-client'
-import { Send, User, MessageSquare, Trash2, ShieldCheck, LogOut } from 'lucide-react'
+import { Send, MessageSquare, Trash2, ShieldCheck, LogOut } from 'lucide-react'
 import './App.css'
 
 const socket = io("https://chat-pwa-hassan.onrender.com");
@@ -9,8 +9,10 @@ function App() {
   const [message, setMessage] = useState("");
   const [chat, setChat] = useState([]);
   const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
   const [room, setRoom] = useState("Général"); 
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [error, setError] = useState("");
   const scrollRef = useRef();
 
   useEffect(() => {
@@ -18,43 +20,34 @@ function App() {
   }, [chat]);
 
   useEffect(() => {
-    socket.on("load_messages", (messages) => { setChat(messages); });
-    socket.on("receive_message", (data) => { setChat((prev) => [...prev, data]); });
-    socket.on("message_deleted", (deletedId) => {
-      setChat((prev) => prev.filter((msg) => msg._id !== deletedId));
+    // Correction de l'erreur 'data' is defined but never used
+    socket.on("auth_success", (data) => {
+      console.log(`Connecté avec succès au salon ${data.room}`);
+      setIsLoggedIn(true);
+      setError("");
     });
-    return () => {
-      socket.off("load_messages");
-      socket.off("receive_message");
-      socket.off("message_deleted");
-    };
+
+    socket.on("auth_error", (msg) => setError(msg));
+    socket.on("load_messages", (msgs) => setChat(msgs));
+    socket.on("receive_message", (msg) => setChat((prev) => [...prev, msg]));
+    socket.on("message_deleted", (id) => setChat((prev) => prev.filter(m => m._id !== id)));
+    
+    return () => socket.removeAllListeners();
   }, []);
 
   const joinChat = () => {
-    if (username.trim() && room) {
-      setIsLoggedIn(true);
-      socket.emit("join_room", room);
+    if (username.trim() && password.trim()) {
+      socket.emit("join_room", { username, room, password });
+    } else {
+      setError("Champs incomplets.");
     }
-  };
-
-  // --- FONCTION DE RETOUR ---
-  const handleLogout = () => {
-    setIsLoggedIn(false);
-    setChat([]); 
   };
 
   const sendMessage = (e) => {
     e.preventDefault();
     if (message.trim()) {
-      const msgData = { text: message, sender: username, room: room };
-      socket.emit("send_message", msgData);
+      socket.emit("send_message", { text: message, sender: username, room });
       setMessage("");
-    }
-  };
-
-  const deleteMessage = (id) => {
-    if (window.confirm("Confirmer la suppression définitive ?")) {
-      socket.emit("delete_message", id);
     }
   };
 
@@ -62,26 +55,25 @@ function App() {
     return (
       <div className="login-container">
         <div className="login-card">
-          <div className="brand-section">
-            <ShieldCheck size={42} color="#1e293b" />
-            <h2>HassanChat <span className="badge">PRO</span></h2>
-          </div>
-          <p className="subtitle">Solution de communication sécurisée</p>
+          <ShieldCheck size={42} color="#1e293b" />
+          <h2>HassanChat <span className="badge">PRO</span></h2>
+          {error && <div className="error-message">{error}</div>}
           <div className="input-group">
-            <label>Identifiant collaborateur</label>
-            <input placeholder="Ex: h.mahamat" value={username} onChange={(e) => setUsername(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && joinChat()} />
+            <label>Identifiant</label>
+            <input value={username} onChange={(e) => setUsername(e.target.value)} />
           </div>
           <div className="input-group">
-            <label>Canal de discussion</label>
-            <select value={room} onChange={(e) => setRoom(e.target.value)} className="room-select">
+            <label>Mot de passe</label>
+            <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && joinChat()} />
+          </div>
+          <div className="input-group">
+            <label>Salon</label>
+            <select value={room} onChange={(e) => setRoom(e.target.value)}>
               <option value="Général">🏢 Direction Générale</option>
               <option value="Technique">🛠️ Support & IT</option>
-              <option value="Marketing">📊 Pôle Marketing</option>
-              <option value="Projets">🚀 Développement Projets</option>
             </select>
           </div>
-          <button className="login-btn" onClick={joinChat}>Accéder à l'espace</button>
-          <div className="login-footer"><small>© 2026 Hassan Dev Solutions</small></div>
+          <button className="login-btn" onClick={joinChat}>Entrer</button>
         </div>
       </div>
     );
@@ -92,44 +84,26 @@ function App() {
       <div className="header">
         <div className="user-info">
           <div className="user-avatar">{username.charAt(0).toUpperCase()}</div>
-          <div className="header-text">
-            <span className="user-name">{username}</span>
-            <span className="room-status"># {room}</span>
-          </div>
+          <div className="header-text"><strong>{username}</strong><small># {room}</small></div>
         </div>
-        <div className="header-right">
-          <div className="status-indicator"><span className="dot"></span><small>En ligne</small></div>
-          <button className="logout-btn" onClick={handleLogout} title="Changer de canal">
-            <LogOut size={18} />
-          </button>
-        </div>
+        <button className="logout-btn" onClick={() => setIsLoggedIn(false)}><LogOut size={18} /></button>
       </div>
       <div className="messages">
-        {chat.length === 0 && (
-          <div className="welcome-chat">
-            <MessageSquare size={32} opacity={0.3} />
-            <p>Début de la conversation sur <strong>{room}</strong></p>
-          </div>
-        )}
         {chat.map((msg) => (
           <div key={msg._id} className={`msg ${msg.sender === username ? "me" : "other"}`}>
-            <div className="msg-content">
-              <div className="msg-header">
-                <span className="sender-name">{msg.sender}</span>
-                <span className="msg-time">{msg.time}</span>
-                {msg.sender === username && <Trash2 size={13} className="delete-icon" onClick={() => deleteMessage(msg._id)} />}
-              </div>
-              <p className="text-body">{msg.text}</p>
-            </div>
+            <div className="msg-header"><span>{msg.sender}</span><small>{msg.time}</small></div>
+            <p>{msg.text}</p>
+            {msg.sender === username && <Trash2 size={12} onClick={() => socket.emit("delete_message", msg._id)} />}
           </div>
         ))}
         <div ref={scrollRef} />
       </div>
       <form onSubmit={sendMessage} className="input-area">
-        <input value={message} onChange={(e) => setMessage(e.target.value)} placeholder={`Message dans ${room}...`} />
+        <input value={message} onChange={(e) => setMessage(e.target.value)} placeholder="Message..." />
         <button type="submit" className="send-btn"><Send size={18} /></button>
       </form>
     </div>
   );
 }
+
 export default App;
