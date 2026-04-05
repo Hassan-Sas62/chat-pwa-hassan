@@ -1,189 +1,56 @@
-/* src/App.css */
-
-/* Conteneur principal - Style Dashboard */
+/* src/App.css - Version Pro Corrigée */
 .chat-window {
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
-  width: 100%;
-  max-width: 900px; /* Un peu plus large pour le confort sur PC */
-  margin: 0 auto;
-  background-color: #f8fafc; /* Gris très clair pro */
-  font-family: 'Inter', -apple-system, sans-serif;
+  display: flex; flex-direction: column; height: 100vh; width: 100%;
+  max-width: 900px; margin: 0 auto; background-color: #f8fafc; font-family: 'Inter', sans-serif;
 }
 
-/* Header - Style Barre d'outils entreprise */
 .header {
-  background-color: #1e293b; /* Bleu Nuit Corporate */
-  color: white;
-  padding: 12px 20px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  border-bottom: 1px solid #334155;
+  background-color: #1e293b; color: white; padding: 12px 20px;
+  display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #334155;
 }
+
+.header-right { display: flex; align-items: center; gap: 15px; }
+
+.logout-btn {
+  background: none; border: none; color: #94a3b8; cursor: pointer;
+  padding: 8px; border-radius: 6px; display: flex; transition: all 0.2s;
+}
+
+.logout-btn:hover { background: rgba(239, 68, 68, 0.1); color: #f87171; transform: scale(1.1); }
 
 .user-avatar {
-  width: 32px;
-  height: 32px;
-  background-color: #3b82f6;
-  border-radius: 6px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 600;
-  font-size: 14px;
+  width: 35px; height: 35px; background: #3b82f6; border-radius: 8px;
+  display: flex; align-items: center; justify-content: center; font-weight: bold;
 }
 
-.header-text {
-  display: flex;
-  flex-direction: column;
-  margin-left: 10px;
-}
-
-.room-status {
-  font-size: 0.75rem;
-  color: #94a3b8;
-  font-weight: 400;
-}
-
-/* Zone des messages */
-.messages {
-  flex: 1;
-  overflow-y: auto;
-  padding: 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  background-color: #ffffff; /* Fond blanc pour la lecture */
-}
-
-.msg {
-  padding: 12px 16px;
-  max-width: 70%;
-  word-wrap: break-word;
-  position: relative;
-  line-height: 1.5;
-}
-
-.msg.me {
-  align-self: flex-end;
-  background-color: #f1f5f9; /* Gris très clair */
-  color: #1e293b;
-  border-radius: 12px 12px 2px 12px;
-  border: 1px solid #e2e8f0;
-}
-
-.msg.other {
-  align-self: flex-start;
-  background-color: #ffffff;
-  color: #334155;
-  border-radius: 12px 12px 12px 2px;
-  border: 1px solid #e2e8f0;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-}
-
-.sender-name {
-  font-weight: 600;
-  font-size: 0.85rem;
-  color: #2563eb;
-  margin-bottom: 4px;
-  display: block;
-}
-
-/* Écran de login - Style Application SaaS */
-.login-container {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 100vh;
-  background-color: #f1f5f9;
-}
+.login-container { display: flex; align-items: center; justify-content: center; height: 100vh; background: #f1f5f9; }
 
 .login-card {
-  background: white;
-  padding: 40px;
-  border-radius: 12px;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  width: 100%;
-  max-width: 400px;
-  border: 1px solid #e2e8f0;
+  background: white; padding: 40px; border-radius: 12px; border: 1px solid #e2e8f0;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.05); width: 100%; max-width: 380px; text-align: center;
 }
 
-.badge {
-  background: #3b82f6;
-  color: white;
-  padding: 2px 6px;
-  border-radius: 4px;
-  font-size: 10px;
-  text-transform: uppercase;
-  margin-left: 8px;
-}
+.badge { font-size: 10px; background: #3b82f6; color: white; padding: 2px 6px; border-radius: 4px; margin-left: 5px; }
 
-.input-group {
-  text-align: left;
-  margin-bottom: 20px;
-}
+.input-group { text-align: left; margin-bottom: 15px; }
+.input-group label { display: block; font-size: 12px; color: #64748b; margin-bottom: 5px; font-weight: 600; }
 
-.input-group label {
-  display: block;
-  font-size: 13px;
-  font-weight: 500;
-  color: #475569;
-  margin-bottom: 6px;
-}
-
-.login-card input, .room-select {
-  width: 100%;
-  padding: 10px 12px;
-  border: 1px solid #cbd5e1;
-  border-radius: 6px;
-  font-size: 15px;
-  transition: border-color 0.2s;
-}
-
-.login-card input:focus, .room-select:focus {
-  border-color: #3b82f6;
-  outline: none;
-}
+.login-card input, .room-select { width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 6px; }
 
 .login-btn {
-  width: 100%;
-  padding: 12px;
-  background-color: #1e293b;
-  color: white;
-  font-weight: 600;
-  border-radius: 6px;
-  transition: opacity 0.2s;
+  width: 100%; padding: 12px; background: #1e293b; color: white;
+  border: none; border-radius: 6px; font-weight: 600; cursor: pointer; margin-top: 10px;
 }
 
-/* Zone d'envoi */
-.input-area {
-  padding: 20px;
-  background: white;
-  border-top: 1px solid #e2e8f0;
-  display: flex;
-  gap: 12px;
-}
+.messages { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 12px; background: white; }
 
-.input-area input {
-  flex: 1;
-  padding: 12px 16px;
-  border-radius: 8px;
-  border: 1px solid #e2e8f0;
-  background: #f8fafc;
-}
+.msg { padding: 12px; max-width: 70%; position: relative; border-radius: 12px; }
+.msg.me { align-self: flex-end; background: #f1f5f9; color: #1e293b; border: 1px solid #e2e8f0; }
+.msg.other { align-self: flex-start; background: white; border: 1px solid #e2e8f0; }
 
-.send-btn {
-  background-color: #1e293b;
-  color: white;
-  width: 48px;
-  height: 48px;
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: transform 0.1s;
-}
+.dot { height: 8px; width: 8px; background: #22c55e; border-radius: 50%; display: inline-block; margin-right: 5px; }
 
-.send-btn:active { transform: scale(0.95); }
+.input-area { display: flex; padding: 15px; background: white; gap: 10px; border-top: 1px solid #e2e8f0; }
+.input-area input { flex: 1; padding: 12px; border-radius: 8px; border: 1px solid #e2e8f0; background: #f8fafc; }
+.send-btn { background: #1e293b; color: white; width: 45px; height: 45px; border-radius: 8px; border: none; cursor: pointer; }
+.welcome-chat { text-align: center; color: #94a3b8; padding-top: 40px; }
