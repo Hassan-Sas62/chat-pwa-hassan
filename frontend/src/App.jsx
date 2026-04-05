@@ -20,7 +20,6 @@ function App() {
   }, [chat]);
 
   useEffect(() => {
-    // Correction de l'erreur 'data' is defined but never used
     socket.on("auth_success", (data) => {
       console.log(`Connecté avec succès au salon ${data.room}`);
       setIsLoggedIn(true);
@@ -71,6 +70,8 @@ function App() {
             <select value={room} onChange={(e) => setRoom(e.target.value)}>
               <option value="Général">🏢 Direction Générale</option>
               <option value="Technique">🛠️ Support & IT</option>
+              <option value="Marketing">📊 Pôle Marketing</option>
+              <option value="Projets">🚀 Développement Projets</option>
             </select>
           </div>
           <button className="login-btn" onClick={joinChat}>Entrer</button>
@@ -89,17 +90,18 @@ function App() {
         <button className="logout-btn" onClick={() => setIsLoggedIn(false)}><LogOut size={18} /></button>
       </div>
       <div className="messages">
+        {chat.length === 0 && <div className="empty-chat">Début de la conversation sur {room}</div>}
         {chat.map((msg) => (
           <div key={msg._id} className={`msg ${msg.sender === username ? "me" : "other"}`}>
             <div className="msg-header"><span>{msg.sender}</span><small>{msg.time}</small></div>
             <p>{msg.text}</p>
-            {msg.sender === username && <Trash2 size={12} onClick={() => socket.emit("delete_message", msg._id)} />}
+            {msg.sender === username && <Trash2 size={12} className="delete-icon" onClick={() => socket.emit("delete_message", msg._id)} />}
           </div>
         ))}
         <div ref={scrollRef} />
       </div>
       <form onSubmit={sendMessage} className="input-area">
-        <input value={message} onChange={(e) => setMessage(e.target.value)} placeholder="Message..." />
+        <input value={message} onChange={(e) => setMessage(e.target.value)} placeholder={`Message dans ${room}...`} />
         <button type="submit" className="send-btn"><Send size={18} /></button>
       </form>
     </div>
