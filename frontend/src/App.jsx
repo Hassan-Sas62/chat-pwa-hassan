@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import io from 'socket.io-client'
-import { Send, User, MessageSquare, Trash2, Hash } from 'lucide-react' // Ajout de Hash
+import { Send, User, MessageSquare, Trash2, ShieldCheck } from 'lucide-react'
 import './App.css'
 
 const socket = io("https://chat-pwa-hassan.onrender.com");
@@ -9,7 +9,7 @@ function App() {
   const [message, setMessage] = useState("");
   const [chat, setChat] = useState([]);
   const [username, setUsername] = useState("");
-  const [room, setRoom] = useState("General"); // ⬅️ Nouveau : État pour le salon
+  const [room, setRoom] = useState("Général"); 
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const scrollRef = useRef();
 
@@ -37,11 +37,10 @@ function App() {
     };
   }, []);
 
-  // 🚪 Fonction pour rejoindre le salon au moment du login
   const joinChat = () => {
-    if (username && room) {
+    if (username.trim() && room) {
       setIsLoggedIn(true);
-      socket.emit("join_room", room); // On informe le serveur du salon choisi
+      socket.emit("join_room", room);
     }
   };
 
@@ -51,7 +50,7 @@ function App() {
       const msgData = { 
         text: message, 
         sender: username,
-        room: room // ⬅️ On envoie le nom du salon avec le message
+        room: room 
       };
       socket.emit("send_message", msgData);
       setMessage("");
@@ -59,7 +58,7 @@ function App() {
   };
 
   const deleteMessage = (id) => {
-    if (window.confirm("Supprimer ce message ?")) {
+    if (window.confirm("Confirmer la suppression définitive de ce message ?")) {
       socket.emit("delete_message", id);
     }
   };
@@ -68,26 +67,39 @@ function App() {
     return (
       <div className="login-container">
         <div className="login-card">
-          <MessageSquare size={48} color="#2563eb" />
-          <h2>HassanChat</h2>
-          <p>Projet PWA - UPM Marrakech</p>
+          <div className="brand-section">
+            <ShieldCheck size={42} color="#1e293b" />
+            <h2>HassanChat <span className="badge">PRO</span></h2>
+          </div>
+          <p className="subtitle">Solution de communication sécurisée pour entreprise</p>
           
-          <input 
-            placeholder="Entre ton nom..." 
-            value={username}
-            onChange={(e) => setUsername(e.target.value)} 
-          />
+          <div className="input-group">
+            <label>Identifiant collaborateur</label>
+            <input 
+              placeholder="Ex: h.mahamat" 
+              value={username}
+              onChange={(e) => setUsername(e.target.value)} 
+              onKeyDown={(e) => e.key === 'Enter' && joinChat()}
+            />
+          </div>
 
-          {/* 🚪 Sélection du salon au login */}
-          <select value={room} onChange={(e) => setRoom(e.target.value)} className="room-select">
-            <option value="General">🌍 Salon Général</option>
-            <option value="Cours">📚 Cours UPM</option>
-            <option value="Loisirs">⚽ Loisirs / Foot</option>
-          </select>
+          <div className="input-group">
+            <label>Canal de discussion</label>
+            <select value={room} onChange={(e) => setRoom(e.target.value)} className="room-select">
+              <option value="Général">🏢 Direction Générale</option>
+              <option value="Technique">🛠️ Support & IT</option>
+              <option value="Marketing">📊 Pôle Marketing</option>
+              <option value="Projets">🚀 Développement Projets</option>
+            </select>
+          </div>
 
-          <button onClick={joinChat}>
-            Rejoindre le Chat
+          <button className="login-btn" onClick={joinChat}>
+            Accéder à l'espace sécurisé
           </button>
+          
+          <div className="login-footer">
+            <small>© 2026 Hassan Dev Solutions • Chiffrement de bout en bout</small>
+          </div>
         </div>
       </div>
     );
@@ -97,29 +109,42 @@ function App() {
     <div className="chat-window">
       <div className="header">
         <div className="user-info">
-          <User size={20} />
-          <span><strong>{username}</strong> dans <span className="room-tag">#{room}</span></span>
+          <div className="user-avatar">
+            {username.charAt(0).toUpperCase()}
+          </div>
+          <div className="header-text">
+            <span className="user-name">{username}</span>
+            <span className="room-status"># {room}</span>
+          </div>
         </div>
-        <div className="status-online"></div>
+        <div className="status-indicator">
+          <span className="dot"></span>
+          <small>En ligne</small>
+        </div>
       </div>
       
       <div className="messages">
-        {chat.length === 0 && <p className="empty-msg">Aucun message dans ce salon...</p>}
+        {chat.length === 0 && (
+          <div className="welcome-chat">
+            <MessageSquare size={32} opacity={0.3} />
+            <p>Début de la conversation sur le canal <strong>{room}</strong></p>
+          </div>
+        )}
         {chat.map((msg) => (
           <div key={msg._id} className={`msg ${msg.sender === username ? "me" : "other"}`}>
             <div className="msg-content">
               <div className="msg-header">
-                <small>{msg.sender} • {msg.time}</small>
+                <span className="sender-name">{msg.sender}</span>
+                <span className="msg-time">{msg.time}</span>
                 {msg.sender === username && (
                   <Trash2 
-                    size={14} 
+                    size={13} 
                     className="delete-icon" 
                     onClick={() => deleteMessage(msg._id)} 
-                    style={{ cursor: 'pointer', marginLeft: '8px', color: '#ff4444' }}
                   />
                 )}
               </div>
-              <p>{msg.text}</p>
+              <p className="text-body">{msg.text}</p>
             </div>
           </div>
         ))}
@@ -130,10 +155,10 @@ function App() {
         <input 
           value={message} 
           onChange={(e) => setMessage(e.target.value)} 
-          placeholder={`Message dans #${room}...`}
+          placeholder={`Écrire dans ${room}...`}
         />
         <button type="submit" className="send-btn">
-          <Send size={20} />
+          <Send size={18} />
         </button>
       </form>
     </div>
