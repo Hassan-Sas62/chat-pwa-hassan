@@ -1,4 +1,3 @@
-// server.js
 const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
@@ -9,7 +8,6 @@ const app = express();
 app.use(cors());
 const server = http.createServer(app);
 
-// 🔌 Socket.io
 const io = new Server(server, {
     cors: {
         origin: "*",
@@ -17,59 +15,70 @@ const io = new Server(server, {
     }
 });
 
-// 🌐 MongoDB Atlas URI
 const uri = "mongodb://SasdeSas:Hassane02%40@ac-sjwyqnm-shard-00-00.ri2es6o.mongodb.net:27017,ac-sjwyqnm-shard-00-01.ri2es6o.mongodb.net:27017,ac-sjwyqnm-shard-00-02.ri2es6o.mongodb.net:27017/hassan_chat?ssl=true&replicaSet=atlas-ffb5le-shard-0&authSource=admin&retryWrites=true&w=majority";
 
-// 📦 Modèle Message
+// 📦 Modèle Message mis à jour avec "room"
 const messageSchema = new mongoose.Schema({
     text: { type: String, required: true },
     sender: { type: String, default: "Utilisateur" },
+    room: { type: String, default: "General" }, // ⬅️ Nouveau champ
     time: String,
     timestamp: { type: Date, default: Date.now }
 });
 const Message = mongoose.model("Message", messageSchema, "SAS");
 
-// 🔥 Connexion MongoDB
 mongoose.connect(uri)
 .then(() => {
     console.log("✅ MongoDB connecté");
 
-    // ⚡ Socket.io après connexion MongoDB
     io.on('connection', async (socket) => {
-        console.log('📱 Nouvel utilisateur connecté :', socket.id);
+        console.log('📱 Nouvel utilisateur :', socket.id);
 
-        // 📥 Charger l'historique
-        try {
-            const oldMessages = await Message.find().sort({ timestamp: 1 }).limit(50);
-            socket.emit('load_messages', oldMessages);
-        } catch (err) {
-            console.log("⚠️ Erreur historique :", err.message);
-        }
+        // 🚪 Action : Rejoindre un salon
+        socket.on('join_room', async (roomName) => {
+            socket.join(roomName);
+            console.log(`👤 ${socket.id} a rejoint : ${roomName}`);
 
-        // 📤 Recevoir et sauvegarder un message
+            // 📥 Charger l'historique UNIQUEMENT de ce salon
+            try {
+                const oldMessages = await Message.find({ room: roomName })
+                    .sort({ timestamp: 1 })
+                    .limit(50);
+                socket.emit('load_messages', oldMessages);
+            } catch (err) {
+                console.log("⚠️ Erreur historique salon :", err.message);
+            }
+        });
+
+        // 📤 Recevoir et sauvegarder (version Salons)
         socket.on('send_message', async (data) => {
             const newMessage = {
                 text: data.text,
                 sender: data.sender || "Utilisateur",
+                room: data.room || "General", // ⬅️ On récupère le salon
                 time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
             };
 
             try {
                 const savedMsg = await Message.create(newMessage);
-                io.emit('receive_message', savedMsg);
-                console.log("💾 Message sauvegardé");
+                // 📢 On envoie uniquement aux gens dans ce salon
+                io.to(data.room).emit('receive_message', savedMsg);
+                console.log(`💾 Message sauvegardé dans ${data.room}`);
             } catch (err) {
                 console.log("❌ Erreur message :", err.message);
             }
         });
 
-        // 🗑️ AJOUT : Supprimer un message
         socket.on('delete_message', async (messageId) => {
             try {
-                await Message.findByIdAndDelete(messageId);
-                // On informe TOUT LE MONDE que ce message doit disparaître de l'écran
-                io.emit('message_deleted', messageId);
-                console.log("🗑️ Message supprimé :", messageId);
+                const msg = await Message.findById(messageId);
+                if (msg) {
+                    const room = msg.room;
+                    await Message.findByIdAndDelete(messageId);
+                    // On informe uniquement le salon concerné
+                    io.to(room).emit('message_deleted', messageId);
+                    console.log("🗑️ Message supprimé");
+                }
             } catch (err) {
                 console.log("❌ Erreur suppression :", err.message);
             }
@@ -83,8 +92,6 @@ mongoose.connect(uri)
 })
 .catch(err => console.log("❌ Erreur MongoDB :", err.message));
 
-// 🚀 Lancer le serveur
-// Utilise process.env.PORT pour Render
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => {
     console.log(`🚀 Serveur prêt sur le port ${PORT}`);
